@@ -6,33 +6,46 @@ cred = credentials.Certificate("semester_key.json")
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
+reference = ""
+
+# notes =>: universities > courses > course unit > notes
 
 # get Universities
 start = time.time()
 print("getting uis")
-print(f"Time check: {start}")
-universities = db.collection("Universities").stream()
+print(f"Time check: {0}")
 
-print("getting courses")
-print(f"Time check: {time.time() - start}")
+reference += "Universities"
+universities = db.collection(reference).stream()
 university = next(universities).to_dict()
-courses = db.collection(f"Universities/{university['node']}/courses").stream()
 
+print(university)
+print("\n\n")
+print("getting courses")
+print(f"Time check: {int(time.time() - start)}")
+
+reference += f"/{university['node']}/courses"
+courses = db.collection(reference).stream()
 for crs in courses:
     course = crs.to_dict()
-    print(course["title"])
-    print("getting course units")
-    print(f"Time check: {time.time() - start}")
-    courseUnits = db.collection(f"Universities/{university['node']}/courses/{course['code']}/courseUnits").stream()
-    for unt in courseUnits:
-        unit = unt.to_dict()
-        print(unit)
 
-# def get_notes(university_name, course_code, course_unit_code):
-#     university_name = university_name.replace(" ", "")  # remove spaces
-#     ref_path = f"Universities/{university_name}/courses/{course_code}/courseUnits/{course_unit_code}/notes"
-#     ref = db.reference(ref_path)
-#
-#     data = ref.get()
-#
-#     return data
+    print(course["title"])
+    print("\ngetting course units")
+    print(f"Time check: {int(time.time() - start)}\n")
+
+    reference += f"/{course['code']}/courseUnits"
+    courseUnits = db.collection(reference).stream()
+    for unt in courseUnits:
+        another_ref = reference
+        unit = unt.to_dict()
+
+        print(unit["title"])
+        print("\ngetting notes")
+        print(f"Time check: {int(time.time() - start)}\n")
+        another_ref += f"/{unit['code']}/notes"
+        notes = db.collection(another_ref).stream()
+
+        for nte in notes:
+            note = nte.to_dict()
+            print(note)
+
