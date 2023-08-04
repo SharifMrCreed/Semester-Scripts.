@@ -64,6 +64,7 @@ async def get_pdf_data(name: str):
     before = int(round(time.time() * 1000))
     path = f"downloads/{name}"
     info = {
+        "pageCount": -1,
         "cohort": 2019,
         "size": convert_file_size(await get_file_size(path)),
         "usageData": {
@@ -84,7 +85,7 @@ async def get_pdf_data(name: str):
         if reader.metadata is not None:
             if reader.metadata.title is not None:
                 info["title"] = reader.metadata.title
-    except NullObject:
+    except BaseException:
         pass
     return info
 
