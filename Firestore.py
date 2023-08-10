@@ -38,7 +38,7 @@ for crs in courses:
     reference += f"/{course['code']}/courseUnits"
     courseUnits = db.collection(reference).stream()
 
-    with open("notes.json", "w") as file:
+    with open("LocalFiles/notes.json", "w") as file:
         for unt in courseUnits:
             another_ref = reference
             unit = unt.to_dict()
@@ -52,9 +52,12 @@ for crs in courses:
                 download_pdfs([[note['downloadLink'], note['id']] for note in notes])
             )
             info_list = asyncio.run(
-                get_info_from_pdfs([note['id'] for note in notes])
+                get_info_from_pdfs(notes)
             )
             for item in info_list:
+                db.collection(another_ref).document(item['id']).set(
+                    item, merge=True
+                )
                 file.write(f"{str(item)},\n")
             print(f"Time check {unit['title']} notes: {int(time.time() - notes_start)}\n")
 

@@ -59,7 +59,8 @@ async def download_pdf_async(url, filename):
                     print(f"Failed to download {url}")
 
 
-async def get_pdf_data(name: str):
+async def get_pdf_data(note: dict):
+    name = note['id']
     print(f"Extracting info on {name}")
     before = int(round(time.time() * 1000))
     path = f"downloads/{name}"
@@ -81,12 +82,14 @@ async def get_pdf_data(name: str):
     }
     try:
         reader = PdfReader(path)
-        info["pageCount"]: len(reader.pages)
+        info["pageCount"] = len(reader.pages)
         if reader.metadata is not None:
             if reader.metadata.title is not None:
                 info["title"] = reader.metadata.title
     except BaseException:
         pass
+
+    info.update(note)
     return info
 
 
@@ -102,11 +105,11 @@ async def download_pdfs(links_and_keys):
     await asyncio.gather(*tasks)
 
 
-async def get_info_from_pdfs(names: List[str]):
+async def get_info_from_pdfs(notes: List[dict]):
     start = time.time()
     tasks = []
-    for name in names:
-        task = asyncio.create_task(get_pdf_data(name))
+    for notes in notes:
+        task = asyncio.create_task(get_pdf_data(notes))
         tasks.append(task)
 
     results = await asyncio.gather(*tasks)
